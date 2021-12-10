@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart' show IterableExtension;
-import 'package:purchases_flutter_platform_interface/src/package_wrapper.dart';
+import 'package:purchases_flutter_platform_interface/src/model/package_wrapper.dart';
 
 /// An offering is a collection of Packages (`Package`) available for the user
 /// to purchase. For more info see https://docs.revenuecat.com/docs/entitlements

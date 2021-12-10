@@ -1,4 +1,4 @@
-import 'package:purchases_flutter_platform_interface/src/offering_wrapper.dart';
+import 'package:purchases_flutter_platform_interface/src/model/offering_wrapper.dart';
 
 /// This class contains all the offerings configured in RevenueCat dashboard.
 /// For more info see https://docs.revenuecat.com/docs/entitlements

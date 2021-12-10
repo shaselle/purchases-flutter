@@ -1,6 +1,6 @@
-import 'package:purchases_flutter/entitlement_infos_wrapper.dart';
-import 'package:purchases_flutter/transaction.dart';
 import 'package:collection/collection.dart';
+import 'package:purchases_flutter_platform_interface/src/model/entitlement_infos_wrapper.dart';
+import 'package:purchases_flutter_platform_interface/src/model/transaction.dart';
 
 /// Class containing all information regarding the purchaser
 class PurchaserInfo {
@@ -124,4 +124,8 @@ class PurchaserInfo {
         this.originalApplicationVersion == other.originalApplicationVersion &&
         this.managementURL == other.managementURL);
   }
+
+  @override
+  int get hashCode => super.hashCode;
+
 }

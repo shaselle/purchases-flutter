@@ -1,5 +1,5 @@
-import 'object_wrappers.dart';
 import 'package:collection/collection.dart';
+import 'package:purchases_flutter_platform_interface/src/model/entitlement_info_wrapper.dart';
 
 /// This class contains all the entitlements associated to the user.
 class EntitlementInfos {
@@ -31,4 +31,8 @@ class EntitlementInfos {
     final mapEq = MapEquality().equals;
     return mapEq(this.all, other.all) && mapEq(this.active, other.active);
   }
+
+  @override
+  int get hashCode => super.hashCode;
+
 }

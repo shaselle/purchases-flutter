@@ -1,4 +1,4 @@
-import 'package:purchases_flutter/object_wrappers.dart';
+import 'package:purchases_flutter_platform_interface/src/model/product_wrapper.dart';
 
 /// Contains information about the product available for the user to purchase.
 /// For more info see https://docs.revenuecat.com/docs/entitlements

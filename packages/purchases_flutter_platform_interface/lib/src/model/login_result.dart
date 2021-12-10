@@ -1,6 +1,6 @@
 
 
-import 'package:purchases_flutter_platform_interface/src/purchaser_info_wrapper.dart';
+import 'package:purchases_flutter_platform_interface/src/model/purchaser_info_wrapper.dart';
 
 /// Class used to hold the result of the logIn method
 class LogInResult {

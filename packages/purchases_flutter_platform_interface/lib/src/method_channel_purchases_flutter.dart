@@ -1,18 +1,17 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:purchases_flutter_platform_interface/purchases_flutter_platform_interface.dart';
-import 'package:purchases_flutter_platform_interface/src/discount.dart';
+import 'package:purchases_flutter_platform_interface/src/model/discount.dart';
 import 'package:purchases_flutter_platform_interface/src/model/billing_feature.dart';
 import 'package:purchases_flutter_platform_interface/src/model/intro_eligibility.dart';
-import 'package:purchases_flutter_platform_interface/src/model/logIn_result.dart';
+import 'package:purchases_flutter_platform_interface/src/model/login_result.dart';
 import 'package:purchases_flutter_platform_interface/src/model/purchase_type.dart';
-import 'package:purchases_flutter_platform_interface/src/model/purchases_attribution_network.dart';
 import 'package:purchases_flutter_platform_interface/src/model/upgrade_info.dart';
-import 'package:purchases_flutter_platform_interface/src/offerings_wrapper.dart';
-import 'package:purchases_flutter_platform_interface/src/package_wrapper.dart';
-import 'package:purchases_flutter_platform_interface/src/payment_discount.dart';
-import 'package:purchases_flutter_platform_interface/src/product_wrapper.dart';
-import 'package:purchases_flutter_platform_interface/src/purchaser_info_wrapper.dart';
+import 'package:purchases_flutter_platform_interface/src/model/offerings_wrapper.dart';
+import 'package:purchases_flutter_platform_interface/src/model/package_wrapper.dart';
+import 'package:purchases_flutter_platform_interface/src/model/payment_discount.dart';
+import 'package:purchases_flutter_platform_interface/src/model/product_wrapper.dart';
+import 'package:purchases_flutter_platform_interface/src/model/purchaser_info_wrapper.dart';
 
 /// Used to handle async updates from [Purchases].
 /// Should be implemented to receive updates when the [PurchaserInfo] changes.
@@ -81,22 +80,6 @@ class MethodChannelPurchasesFlutter extends PurchasesFlutterPlatform {
     _purchaserInfoUpdateListeners.remove(listenerToRemove);
   }
 
-  /// Deprecated in favor of set<NetworkId> functions.
-  /// Add a dict of attribution information
-  ///
-  /// [data] Attribution data from any of the [PurchasesAttributionNetwork].
-  ///
-  /// [network] Which network, see [PurchasesAttributionNetwork].
-  ///
-  /// [networkUserId] An optional unique id for identifying the user.
-  @Deprecated("Use the set<NetworkId> functions instead.")
-   Future<void> addAttributionData(Map<String, Object> data, PurchasesAttributionNetwork network, {String? networkUserId}) async {
-    await _channel.invokeMethod('addAttributionData', {
-      'data': data,
-      'network': network.index,
-      'networkUserId': networkUserId,
-    });
-  }
 
   /// Fetch the configured offerings for this users. Offerings allows you to
   /// configure your in-app products via RevenueCat and greatly simplifies
@@ -227,19 +210,6 @@ class MethodChannelPurchasesFlutter extends PurchasesFlutterPlatform {
     return await _channel.invokeMethod('getAppUserID') as String;
   }
 
-  /// Deprecated in favor of logIn.
-  /// This function will alias two appUserIDs together.
-  ///
-  /// Returns a [PurchaserInfo] object, or throws a [PlatformException] if there
-  /// was a problem restoring transactions.
-  ///
-  /// [newAppUserID] The new appUserID that should be linked to the currently
-  /// identified appUserID.
-  @Deprecated("Use logIn instead.")
-   Future<PurchaserInfo> createAlias(String newAppUserID) async {
-    Map<dynamic, dynamic> result = await _channel.invokeMethod('createAlias', {'newAppUserID': newAppUserID});
-    return PurchaserInfo.fromJson(result);
-  }
 
   /// This function will logIn the current user with an appUserID.
   /// Typically this would be used after logging in a user to identify them without

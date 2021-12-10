@@ -2,19 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:purchases_flutter_platform_interface/purchases_flutter_platform_interface.dart';
 
-import 'object_wrappers.dart';
-
-export 'object_wrappers.dart';
-
-/// Used to handle async updates from [Purchases].
-/// Should be implemented to receive updates when the [PurchaserInfo] changes.
-typedef void PurchaserInfoUpdateListener(PurchaserInfo purchaserInfo);
 
 /// Entry point for Purchases.
 class Purchases {
-  static final Set<PurchaserInfoUpdateListener> _purchaserInfoUpdateListeners =
-      Set();
+  static final Set<PurchaserInfoUpdateListener> _purchaserInfoUpdateListeners = Set();
 
   static final _channel = MethodChannel('purchases_flutter')
     ..setMethodCallHandler((MethodCall call) async {
@@ -44,12 +37,7 @@ class Purchases {
       {String? appUserId,
       bool observerMode = false,
       String? userDefaultsSuiteName}) async {
-    return await _channel.invokeMethod('setupPurchases', {
-      'apiKey': apiKey,
-      'appUserId': appUserId,
-      'observerMode': observerMode,
-      'userDefaultsSuiteName': userDefaultsSuiteName
-    });
+    return await PurchasesFlutterPlatform.instance.setup(apiKey,appUserId: appUserId,userDefaultsSuiteName: userDefaultsSuiteName);
   }
 
   // Default to TRUE, set this to FALSE if you are consuming and acknowledging transactions outside of the Purchases SDK.
@@ -57,22 +45,9 @@ class Purchases {
   /// [finishTransactions] The value to be passed to finishTransactions.
   ///
   static Future<void> setFinishTransactions(bool finishTransactions) async {
-    await _channel.invokeMethod(
-        'setFinishTransactions', {'finishTransactions': finishTransactions});
+    await PurchasesFlutterPlatform.instance.setFinishTransactions(finishTransactions);
   }
 
-  /// Deprecated. Configure behavior through the RevenueCat dashboard instead.
-  /// Set this to true if you are passing in an appUserID but it is anonymous.
-  ///
-  /// This is true by default if you didn't pass an appUserID.
-  /// If a user tries to purchase a product that is active on the current app
-  /// store account, we will treat it as a restore and alias the new ID with the
-  /// previous id.
-  @Deprecated("Configure behavior through the RevenueCat dashboard instead.")
-  static Future<void> setAllowSharingStoreAccount(bool allowSharing) async {
-    await _channel.invokeMethod(
-        'setAllowSharingStoreAccount', {'allowSharing': allowSharing});
-  }
 
   /// Sets a function to be called on updated purchaser info.
   ///
@@ -93,24 +68,7 @@ class Purchases {
     _purchaserInfoUpdateListeners.remove(listenerToRemove);
   }
 
-  /// Deprecated in favor of set<NetworkId> functions.
-  /// Add a dict of attribution information
-  ///
-  /// [data] Attribution data from any of the [PurchasesAttributionNetwork].
-  ///
-  /// [network] Which network, see [PurchasesAttributionNetwork].
-  ///
-  /// [networkUserId] An optional unique id for identifying the user.
-  @Deprecated("Use the set<NetworkId> functions instead.")
-  static Future<void> addAttributionData(
-      Map<String, Object> data, PurchasesAttributionNetwork network,
-      {String? networkUserId}) async {
-    await _channel.invokeMethod('addAttributionData', {
-      'data': data,
-      'network': network.index,
-      'networkUserId': networkUserId
-    });
-  }
+
 
   /// Fetch the configured offerings for this users. Offerings allows you to
   /// configure your in-app products via RevenueCat and greatly simplifies
@@ -122,7 +80,7 @@ class Purchases {
   ///
   /// Time is money.
   static Future<Offerings> getOfferings() async {
-    return Offerings.fromJson(await _channel.invokeMethod('getOfferings'));
+    return  PurchasesFlutterPlatform.instance.getOfferings();
   }
 
   /// Fetch the product info. Returns a list of products or throws an error if

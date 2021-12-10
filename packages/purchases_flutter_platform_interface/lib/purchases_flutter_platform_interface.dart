@@ -1,16 +1,6 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
-import 'package:purchases_flutter_platform_interface/src/discount.dart';
+import 'package:purchases_flutter_platform_interface/purchases_flutter_model.dart';
 import 'package:purchases_flutter_platform_interface/src/method_channel_purchases_flutter.dart';
-import 'package:purchases_flutter_platform_interface/src/model/billing_feature.dart';
-import 'package:purchases_flutter_platform_interface/src/model/intro_eligibility.dart';
-import 'package:purchases_flutter_platform_interface/src/model/logIn_result.dart';
-import 'package:purchases_flutter_platform_interface/src/model/purchase_type.dart';
-import 'package:purchases_flutter_platform_interface/src/model/upgrade_info.dart';
-import 'package:purchases_flutter_platform_interface/src/offerings_wrapper.dart';
-import 'package:purchases_flutter_platform_interface/src/package_wrapper.dart';
-import 'package:purchases_flutter_platform_interface/src/payment_discount.dart';
-import 'package:purchases_flutter_platform_interface/src/product_wrapper.dart';
-import 'package:purchases_flutter_platform_interface/src/purchaser_info_wrapper.dart';
 
 /// Used to handle async updates from [Purchases].
 /// Should be implemented to receive updates when the [PurchaserInfo] changes.
