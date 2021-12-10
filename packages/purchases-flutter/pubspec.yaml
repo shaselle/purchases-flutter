@@ -14,6 +14,8 @@ dependencies:
   flutter:
     sdk: flutter
   collection: ^1.15.0
+  purchases_flutter_platform_interface:
+    path: ../purchases_flutter_platform_interface
 
 dev_dependencies:
   pedantic: ^1.8.0
@@ -22,6 +24,7 @@ dev_dependencies:
   flutter_driver:
     sdk: flutter
   build_runner: ^1.0.0
+  plugin_platform_interface:
   test: ^1.15.7
 
 # For information on the generic Dart part of this file, see the
@@ -42,6 +45,12 @@ flutter:
         pluginClass: PurchasesFlutterPlugin
       macos:
         pluginClass: PurchasesFlutterPlugin
+      web:
+        dartPluginClass: PurchasesPlus
+      windows:
+        dartPluginClass: PurchasesPlus
+      linux:
+        dartPluginClass: PurchasesPlus
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:

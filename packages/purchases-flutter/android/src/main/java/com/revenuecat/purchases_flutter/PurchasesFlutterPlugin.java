@@ -1,5 +1,3 @@
-package com.revenuecat.purchases_flutter;
-
 import android.app.Activity;
 import android.content.Context;
 

@@ -1,0 +1,12 @@
+name: purchases-flutter
+packages:
+  - packages/**
+
+scripts:
+  lint:all:
+    run: melos run format
+    description: Run all static analysis checks.
+
+  format:
+    run: dart format ./**/
+    description: "Format all files"
