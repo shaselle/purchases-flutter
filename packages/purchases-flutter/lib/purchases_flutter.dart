@@ -1,24 +1,8 @@
-import 'dart:async';
-
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'package:purchases_flutter_platform_interface/purchases_flutter_model.dart';
 import 'package:purchases_flutter_platform_interface/purchases_flutter_platform_interface.dart';
-
 
 /// Entry point for Purchases.
 class Purchases {
-  static final Set<PurchaserInfoUpdateListener> _purchaserInfoUpdateListeners = Set();
-
-  static final _channel = MethodChannel('purchases_flutter')
-    ..setMethodCallHandler((MethodCall call) async {
-      switch (call.method) {
-        case "Purchases-PurchaserInfoUpdated":
-          _purchaserInfoUpdateListeners.forEach(
-              (listener) => listener(PurchaserInfo.fromJson(call.arguments)));
-          break;
-      }
-    });
-
   /// Sets up Purchases with your API key and an app user id.
   ///
   /// [apiKey] RevenueCat API Key.
@@ -33,11 +17,8 @@ class Purchases {
   /// Set this if you would like the RevenueCat SDK to store its preferences in a different
   /// NSUserDefaults suite, otherwise it will use standardUserDefaults.
   /// Default is null, which will make the SDK use standardUserDefaults.
-  static Future<void> setup(String apiKey,
-      {String? appUserId,
-      bool observerMode = false,
-      String? userDefaultsSuiteName}) async {
-    return await PurchasesFlutterPlatform.instance.setup(apiKey,appUserId: appUserId,userDefaultsSuiteName: userDefaultsSuiteName);
+  static Future<void> setup(String apiKey, {String? appUserId, bool observerMode = false, String? userDefaultsSuiteName}) async {
+    return await PurchasesFlutterPlatform.instance.setup(apiKey, appUserId: appUserId, userDefaultsSuiteName: userDefaultsSuiteName);
   }
 
   // Default to TRUE, set this to FALSE if you are consuming and acknowledging transactions outside of the Purchases SDK.
@@ -48,27 +29,22 @@ class Purchases {
     await PurchasesFlutterPlatform.instance.setFinishTransactions(finishTransactions);
   }
 
-
   /// Sets a function to be called on updated purchaser info.
   ///
   /// The function is called right away with the latest purchaser info as soon
   /// as it's set.
   ///
   /// [purchaserInfoUpdateListener] PurchaserInfo update listener.
-  static void addPurchaserInfoUpdateListener(
-      PurchaserInfoUpdateListener purchaserInfoUpdateListener) async {
-    _purchaserInfoUpdateListeners.add(purchaserInfoUpdateListener);
+  static void addPurchaserInfoUpdateListener(PurchaserInfoUpdateListener purchaserInfoUpdateListener) async {
+     PurchasesFlutterPlatform.instance.addPurchaserInfoUpdateListener(purchaserInfoUpdateListener);
   }
 
   /// Removes a given PurchaserInfoUpdateListener
   ///
   /// [listenerToRemove] PurchaserInfoListener reference of the listener to remove.
-  static void removePurchaserInfoUpdateListener(
-      PurchaserInfoUpdateListener listenerToRemove) async {
-    _purchaserInfoUpdateListeners.remove(listenerToRemove);
+  static void removePurchaserInfoUpdateListener(PurchaserInfoUpdateListener listenerToRemove) async {
+    PurchasesFlutterPlatform.instance.removePurchaserInfoUpdateListener(listenerToRemove);
   }
-
-
 
   /// Fetch the configured offerings for this users. Offerings allows you to
   /// configure your in-app products via RevenueCat and greatly simplifies
@@ -80,7 +56,7 @@ class Purchases {
   ///
   /// Time is money.
   static Future<Offerings> getOfferings() async {
-    return  PurchasesFlutterPlatform.instance.getOfferings();
+    return PurchasesFlutterPlatform.instance.getOfferings();
   }
 
   /// Fetch the product info. Returns a list of products or throws an error if
@@ -92,11 +68,8 @@ class Purchases {
   /// [type] If the products are Android INAPPs, this needs to be
   /// PurchaseType.INAPP otherwise the products won't be found.
   /// PurchaseType.Subs by default. This parameter only has effect in Android.
-  static Future<List<Product>> getProducts(List<String> productIdentifiers,
-      {PurchaseType type = PurchaseType.subs}) async {
-    final List<dynamic> result = await _channel.invokeMethod('getProductInfo',
-        {'productIdentifiers': productIdentifiers, 'type': describeEnum(type)});
-    return result.map<Product>((item) => Product.fromJson(item)).toList();
+  static Future<List<Product>> getProducts(List<String> productIdentifiers, {PurchaseType type = PurchaseType.subs}) async {
+    return await PurchasesFlutterPlatform.instance.getProducts(productIdentifiers, type: type);
   }
 
   /// Makes a purchase. Returns a [PurchaserInfo] object. Throws a
@@ -114,16 +87,8 @@ class Purchases {
   /// [type] If the product is an Android INAPP, this needs to be
   /// PurchaseType.INAPP otherwise the product won't be found.
   /// PurchaseType.Subs by default. This parameter only has effect in Android.
-  static Future<PurchaserInfo> purchaseProduct(String productIdentifier,
-      {UpgradeInfo? upgradeInfo, PurchaseType type = PurchaseType.subs}) async {
-    final prorationMode = upgradeInfo?.prorationMode;
-    final response = await _channel.invokeMethod('purchaseProduct', {
-      'productIdentifier': productIdentifier,
-      'oldSKU': upgradeInfo?.oldSKU,
-      'prorationMode': prorationMode != null ? prorationMode.index : null,
-      'type': describeEnum(type)
-    });
-    return PurchaserInfo.fromJson(response["purchaserInfo"]);
+  static Future<PurchaserInfo> purchaseProduct(String productIdentifier, {UpgradeInfo? upgradeInfo, PurchaseType type = PurchaseType.subs}) async {
+    return await PurchasesFlutterPlatform.instance.purchaseProduct(productIdentifier,type: type);
   }
 
   /// Makes a purchase. Returns a [PurchaserInfo] object. Throws a
@@ -136,16 +101,8 @@ class Purchases {
   ///
   /// [upgradeInfo] Android only. Optional UpgradeInfo you wish to upgrade from
   /// containing the oldSKU and the optional prorationMode.
-  static Future<PurchaserInfo> purchasePackage(Package packageToPurchase,
-      {UpgradeInfo? upgradeInfo}) async {
-    final prorationMode = upgradeInfo?.prorationMode;
-    final response = await _channel.invokeMethod('purchasePackage', {
-      'packageIdentifier': packageToPurchase.identifier,
-      'offeringIdentifier': packageToPurchase.offeringIdentifier,
-      'oldSKU': upgradeInfo?.oldSKU,
-      'prorationMode': prorationMode != null ? prorationMode.index : null
-    });
-    return PurchaserInfo.fromJson(response["purchaserInfo"]);
+  static Future<PurchaserInfo> purchasePackage(Package packageToPurchase, {UpgradeInfo? upgradeInfo}) async {
+    return await PurchasesFlutterPlatform.instance.purchasePackage(packageToPurchase, upgradeInfo: upgradeInfo);
   }
 
   /// iOS only. Purchase a product applying a given discount.
@@ -160,13 +117,8 @@ class Purchases {
   ///
   /// [paymentDiscount] Discount to apply to the product. Retrieve this discount
   /// using [getPaymentDiscount].
-  static Future<PurchaserInfo> purchaseDiscountedProduct(
-      Product product, PaymentDiscount discount) async {
-    final response = await _channel.invokeMethod('purchaseProduct', {
-      'productIdentifier': product.identifier,
-      'signedDiscountTimestamp': discount.timestamp.toString()
-    });
-    return PurchaserInfo.fromJson(response["purchaserInfo"]);
+  static Future<PurchaserInfo> purchaseDiscountedProduct(Product product, PaymentDiscount discount) async {
+    return await PurchasesFlutterPlatform.instance.purchaseDiscountedProduct(product, discount);
   }
 
   /// iOS only. Purchase a package applying a given discount.
@@ -181,14 +133,8 @@ class Purchases {
   ///
   /// [paymentDiscount] Discount to apply to the product. Retrieve this discount
   /// using [getPaymentDiscount].
-  static Future<PurchaserInfo> purchaseDiscountedPackage(
-      Package packageToPurchase, PaymentDiscount discount) async {
-    final response = await _channel.invokeMethod('purchasePackage', {
-      'packageIdentifier': packageToPurchase.identifier,
-      'offeringIdentifier': packageToPurchase.offeringIdentifier,
-      'signedDiscountTimestamp': discount.timestamp.toString()
-    });
-    return PurchaserInfo.fromJson(response["purchaserInfo"]);
+  static Future<PurchaserInfo> purchaseDiscountedPackage(Package packageToPurchase, PaymentDiscount discount) async {
+    return await PurchasesFlutterPlatform.instance.purchaseDiscountedPackage(packageToPurchase, discount);
   }
 
   /// Restores a user's previous purchases and links their appUserIDs to any
@@ -197,29 +143,14 @@ class Purchases {
   /// Returns a [PurchaserInfo] object, or throws a [PlatformException] if there
   /// was a problem restoring transactions.
   static Future<PurchaserInfo> restoreTransactions() async {
-    final result = await _channel.invokeMethod('restoreTransactions');
-    return PurchaserInfo.fromJson(result);
+    return await PurchasesFlutterPlatform.instance.restoreTransactions();
   }
 
   /// Gets the current appUserID.
   static Future<String> get appUserID async {
-    return await _channel.invokeMethod('getAppUserID') as String;
+    return await PurchasesFlutterPlatform.instance.appUserID;
   }
 
-  /// Deprecated in favor of logIn.
-  /// This function will alias two appUserIDs together.
-  ///
-  /// Returns a [PurchaserInfo] object, or throws a [PlatformException] if there
-  /// was a problem restoring transactions.
-  ///
-  /// [newAppUserID] The new appUserID that should be linked to the currently
-  /// identified appUserID.
-  @Deprecated("Use logIn instead.")
-  static Future<PurchaserInfo> createAlias(String newAppUserID) async {
-    Map<dynamic, dynamic> result = await _channel
-        .invokeMethod('createAlias', {'newAppUserID': newAppUserID});
-    return PurchaserInfo.fromJson(result);
-  }
 
   /// This function will logIn the current user with an appUserID.
   /// Typically this would be used after logging in a user to identify them without
@@ -231,30 +162,9 @@ class Purchases {
   ///
   /// [newAppUserID] The appUserID that should be linked to the currently user
   static Future<LogInResult> logIn(String appUserID) async {
-    Map<dynamic, dynamic> result =
-        await _channel.invokeMethod('logIn', {'appUserID': appUserID});
-    PurchaserInfo purchaserInfo =
-        PurchaserInfo.fromJson(result["purchaserInfo"]);
-    bool created = result["created"];
-
-    return LogInResult(purchaserInfo: purchaserInfo, created: created);
+    return await PurchasesFlutterPlatform.instance.logIn(appUserID);
   }
 
-  /// Deprecated in favor of logIn.
-  /// This function will identify the current user with an appUserID.
-  /// Typically this would be used after a logout to identify a new user without
-  /// calling configure
-  ///
-  /// Returns a [PurchaserInfo] object, or throws a [PlatformException] if there
-  /// was a problem restoring transactions.
-  ///
-  /// [newAppUserID] The appUserID that should be linked to the currently user
-  @Deprecated("Use logIn instead.")
-  static Future<PurchaserInfo> identify(String appUserID) async {
-    Map<dynamic, dynamic> result =
-        await _channel.invokeMethod('identify', {'appUserID': appUserID});
-    return PurchaserInfo.fromJson(result);
-  }
 
   /// Logs out the  Purchases client, clearing the saved appUserID. This will
   /// generate a random user id and save it in the cache.
@@ -263,26 +173,12 @@ class Purchases {
   /// was a problem restoring transactions or if the method is called while the
   /// current user is anonymous.
   static Future<PurchaserInfo> logOut() async {
-    Map<dynamic, dynamic> result = await _channel.invokeMethod('logOut');
-    return PurchaserInfo.fromJson(result);
-  }
-
-  /// Deprecated in favor of logOut.
-  /// Resets the Purchases client clearing the saved appUserID. This will
-  /// generate a random user id and save it in the cache.
-  ///
-  /// Returns a [PurchaserInfo] object, or throws a [PlatformException] if there
-  /// was a problem restoring transactions.
-  @Deprecated("Use logOut instead.")
-  static Future<PurchaserInfo> reset() async {
-    Map<dynamic, dynamic> result = await _channel.invokeMethod('reset');
-    return PurchaserInfo.fromJson(result);
+    return await PurchasesFlutterPlatform.instance.logOut();
   }
 
   /// Enables/Disables debugs logs
   static Future<void> setDebugLogsEnabled(bool enabled) async {
-    return await _channel
-        .invokeMethod('setDebugLogsEnabled', {'enabled': enabled});
+    return await PurchasesFlutterPlatform.instance.setDebugLogsEnabled(enabled);
   }
 
   ///
@@ -290,23 +186,19 @@ class Purchases {
   /// More information: http://errors.rev.cat/ask-to-buy
   ///
   static Future<void> setSimulatesAskToBuyInSandbox(bool enabled) async {
-    return await _channel
-        .invokeMethod('setSimulatesAskToBuyInSandbox', {'enabled': enabled});
+    return await PurchasesFlutterPlatform.instance.setSimulatesAskToBuyInSandbox(enabled);
   }
 
   ///
   /// Set this property to your proxy URL before configuring Purchases *only* if you've received a proxy key value from your RevenueCat contact.
   ///
   static Future<void> setProxyURL(String url) async {
-    return await _channel
-        .invokeMethod('setProxyURLString', {'proxyURLString': url});
+    return await PurchasesFlutterPlatform.instance.setProxyURL(url);
   }
 
   /// Gets current purchaser info, which will normally be cached.
   static Future<PurchaserInfo> getPurchaserInfo() async {
-    Map<dynamic, dynamic> result =
-        await _channel.invokeMethod('getPurchaserInfo');
-    return PurchaserInfo.fromJson(result);
+    return await PurchasesFlutterPlatform.instance.getPurchaserInfo();
   }
 
   ///  This method will send all the purchases to the RevenueCat backend.
@@ -317,26 +209,23 @@ class Purchases {
   ///  This method should be called anytime a sync is needed, like after a
   ///  successful purchase.
   static Future<void> syncPurchases() async {
-    return await _channel.invokeMethod("syncPurchases");
+    return await PurchasesFlutterPlatform.instance.syncPurchases();
   }
 
   /// iOS only. Enable automatic collection of Apple Search Ad attribution. Disabled by
   /// default
-  static Future<void> setAutomaticAppleSearchAdsAttributionCollection(
-      bool enabled) async {
-    return await _channel.invokeMethod(
-        'setAutomaticAppleSearchAdsAttributionCollection',
-        {'enabled': enabled});
+  static Future<void> setAutomaticAppleSearchAdsAttributionCollection(bool enabled) async {
+    return await PurchasesFlutterPlatform.instance.setAutomaticAppleSearchAdsAttributionCollection(enabled);
   }
 
   /// If the `appUserID` has been generated by RevenueCat
   static Future<bool> get isAnonymous async {
-    return await _channel.invokeMethod('isAnonymous') as bool;
+    return await PurchasesFlutterPlatform.instance.isAnonymous;
   }
 
   /// Returns `true` if RevenueCat has already been intialized through `setup()`.
   static Future<bool> get isConfigured async {
-    return await _channel.invokeMethod('isConfigured') as bool;
+    return await PurchasesFlutterPlatform.instance.isConfigured;
   }
 
   /// iOS only. Computes whether or not a user is eligible for the introductory
@@ -355,14 +244,8 @@ class Purchases {
   /// Android always returns introEligibilityStatusUnknown.
   ///
   /// [productIdentifiers] Array of product identifiers
-  static Future<Map<String, IntroEligibility>>
-      checkTrialOrIntroductoryPriceEligibility(
-          List<String> productIdentifiers) async {
-    Map<dynamic, dynamic> eligibilityMap = await _channel.invokeMethod(
-        'checkTrialOrIntroductoryPriceEligibility',
-        {'productIdentifiers': productIdentifiers});
-    return eligibilityMap.map((key, value) =>
-        MapEntry(key as String, IntroEligibility.fromJson(value)));
+  static Future<Map<String, IntroEligibility>> checkTrialOrIntroductoryPriceEligibility(List<String> productIdentifiers) async {
+    return await PurchasesFlutterPlatform.instance.checkTrialOrIntroductoryPriceEligibility(productIdentifiers);
   }
 
   /// Invalidates the cache for purchaser information.
@@ -374,14 +257,14 @@ class Purchases {
   /// This is useful for cases where purchaser information might have been updated outside of the app, like if a
   /// promotional subscription is granted through the RevenueCat dashboard.
   static Future<void> invalidatePurchaserInfoCache() async {
-    return await _channel.invokeMethod('invalidatePurchaserInfoCache');
+    return await PurchasesFlutterPlatform.instance.invalidatePurchaserInfoCache();
   }
 
   /// iOS only. Presents a code redemption sheet, useful for redeeming offer codes
   /// Refer to https://docs.revenuecat.com/docs/ios-subscription-offers#offer-codes for more information on how
   /// to configure and use offer codes
   static Future<void> presentCodeRedemptionSheet() async {
-    return await _channel.invokeMethod('presentCodeRedemptionSheet');
+    return await PurchasesFlutterPlatform.instance.presentCodeRedemptionSheet();
   }
 
   ///================================================================================
@@ -397,35 +280,35 @@ class Purchases {
   ///
   /// [attributes] Map of attributes by key. Set the value as an empty string to delete an attribute.
   static Future<void> setAttributes(Map<String, String> attributes) async {
-    await _channel.invokeMethod('setAttributes', {'attributes': attributes});
+    await PurchasesFlutterPlatform.instance.setAttributes(attributes);
   }
 
   /// Subscriber attribute associated with the email address for the user
   ///
   /// [email] Empty String or null will delete the subscriber attribute.
   static Future<void> setEmail(String email) async {
-    await _channel.invokeMethod('setEmail', {'email': email});
+    await PurchasesFlutterPlatform.instance.setEmail(email);
   }
 
   /// Subscriber attribute associated with the phone number for the user
   ///
   /// [phoneNumber] Empty String or null will delete the subscriber attribute.
   static Future<void> setPhoneNumber(String phoneNumber) async {
-    await _channel.invokeMethod('setPhoneNumber', {'phoneNumber': phoneNumber});
+    await PurchasesFlutterPlatform.instance.setPhoneNumber(phoneNumber);
   }
 
   /// Subscriber attribute associated with the display name for the user
   ///
   /// [displayName] Empty String or null will delete the subscriber attribute.
   static Future<void> setDisplayName(String displayName) async {
-    await _channel.invokeMethod('setDisplayName', {'displayName': displayName});
+    await PurchasesFlutterPlatform.instance.setDisplayName(displayName);
   }
 
   /// Subscriber attribute associated with the push token for the user
   ///
   /// [pushToken] Empty String or null will delete the subscriber attribute.
   static Future<void> setPushToken(String pushToken) async {
-    await _channel.invokeMethod('setPushToken', {'pushToken': pushToken});
+    await PurchasesFlutterPlatform.instance.setPushToken(pushToken);
   }
 
   /// Subscriber attribute associated with the Adjust Id for the user
@@ -433,7 +316,7 @@ class Purchases {
   ///
   /// [adjustID] Empty String or null will delete the subscriber attribute.
   static Future<void> setAdjustID(String adjustID) async {
-    await _channel.invokeMethod('setAdjustID', {'adjustID': adjustID});
+    await PurchasesFlutterPlatform.instance.setAdjustID(adjustID);
   }
 
   /// Subscriber attribute associated with the Appsflyer Id for the user
@@ -441,7 +324,7 @@ class Purchases {
   ///
   /// [appsflyerID] Empty String or null will delete the subscriber attribute.
   static Future<void> setAppsflyerID(String appsflyerID) async {
-    await _channel.invokeMethod('setAppsflyerID', {'appsflyerID': appsflyerID});
+    await PurchasesFlutterPlatform.instance.setAppsflyerID(appsflyerID);
   }
 
   /// Subscriber attribute associated with the Facebook SDK Anonymous Id for the user
@@ -449,8 +332,7 @@ class Purchases {
   ///
   /// [fbAnonymousID] Empty String or null will delete the subscriber attribute.
   static Future<void> setFBAnonymousID(String fbAnonymousID) async {
-    await _channel
-        .invokeMethod('setFBAnonymousID', {'fbAnonymousID': fbAnonymousID});
+    await PurchasesFlutterPlatform.instance.setFBAnonymousID(fbAnonymousID);
   }
 
   /// Subscriber attribute associated with the mParticle Id for the user
@@ -458,7 +340,7 @@ class Purchases {
   ///
   /// [mparticleID] Empty String or null will delete the subscriber attribute.
   static Future<void> setMparticleID(String mparticleID) async {
-    await _channel.invokeMethod('setMparticleID', {'mparticleID': mparticleID});
+    await PurchasesFlutterPlatform.instance.setMparticleID(mparticleID);
   }
 
   /// Subscriber attribute associated with the OneSignal Player Id for the user
@@ -466,7 +348,7 @@ class Purchases {
   ///
   /// [onesignalID] Empty String or null will delete the subscriber attribute.
   static Future<void> setOnesignalID(String onesignalID) async {
-    await _channel.invokeMethod('setOnesignalID', {'onesignalID': onesignalID});
+    await PurchasesFlutterPlatform.instance.setOnesignalID(onesignalID);
   }
 
   /// Subscriber attribute associated with the Airship Channel Id for the user
@@ -474,29 +356,28 @@ class Purchases {
   ///
   /// [airshipChannelID] Empty String or null will delete the subscriber attribute.
   static Future<void> setAirshipChannelID(String airshipChannelID) async {
-    await _channel.invokeMethod(
-        'setAirshipChannelID', {'airshipChannelID': airshipChannelID});
+    await PurchasesFlutterPlatform.instance.setAirshipChannelID(airshipChannelID);
   }
 
   /// Subscriber attribute associated with the install media source for the user
   ///
   /// [mediaSource] Empty String or null will delete the subscriber attribute.
   static Future<void> setMediaSource(String mediaSource) async {
-    await _channel.invokeMethod('setMediaSource', {'mediaSource': mediaSource});
+    await PurchasesFlutterPlatform.instance.setMediaSource(mediaSource);
   }
 
   /// Subscriber attribute associated with the install campaign for the user
   ///
   /// [campaign] Empty String or null will delete the subscriber attribute.
   static Future<void> setCampaign(String campaign) async {
-    await _channel.invokeMethod('setCampaign', {'campaign': campaign});
+    await PurchasesFlutterPlatform.instance.setCampaign(campaign);
   }
 
   /// Subscriber attribute associated with the install ad group for the user
   ///
   /// [adGroup] Empty String or null will delete the subscriber attribute.
   static Future<void> setAdGroup(String adGroup) async {
-    await _channel.invokeMethod('setAdGroup', {'adGroup': adGroup});
+    await PurchasesFlutterPlatform.instance.setAdGroup(adGroup);
   }
 
   ///
@@ -504,28 +385,28 @@ class Purchases {
   ///
   /// [ad] Empty String or null will delete the subscriber attribute.
   static Future<void> setAd(String ad) async {
-    await _channel.invokeMethod('setAd', {'ad': ad});
+    await PurchasesFlutterPlatform.instance.setAd(ad);
   }
 
   /// Subscriber attribute associated with the install keyword for the user
   ///
   /// [keyword] Empty String or null will delete the subscriber attribute.
   static Future<void> setKeyword(String keyword) async {
-    await _channel.invokeMethod('setKeyword', {'keyword': keyword});
+    await PurchasesFlutterPlatform.instance.setKeyword(keyword);
   }
 
   /// Subscriber attribute associated with the install ad creative for the user
   ///
   /// [creative] Empty String or null will delete the subscriber attribute.
   static Future<void> setCreative(String creative) async {
-    await _channel.invokeMethod('setCreative', {'creative': creative});
+    await PurchasesFlutterPlatform.instance.setCreative(creative);
   }
 
   /// Automatically collect subscriber attributes associated with the device identifiers
   /// $idfa, $idfv, $ip on iOS
   /// $gpsAdId, $androidId, $ip on Android
   static Future<void> collectDeviceIdentifiers() async {
-    await _channel.invokeMethod('collectDeviceIdentifiers');
+    await PurchasesFlutterPlatform.instance.collectDeviceIdentifiers();
   }
 
   /// Check if billing is supported for the current user (meaning IN-APP
@@ -536,10 +417,8 @@ class Purchases {
   /// For other stores, BillingFeatures won't be checked.
   /// [features] An optional  list of [BillingFeature]s to check for support.
   /// By default, is an empty list and no feature support will be checked.
-  static Future<bool> canMakePayments(
-      [List<BillingFeature> features = const []]) async {
-    return await _channel.invokeMethod(
-        'canMakePayments', {'features': features.map((e) => e.index).toList()});
+  static Future<bool> canMakePayments([List<BillingFeature> features = const []]) async {
+    return await PurchasesFlutterPlatform.instance.canMakePayments(features);
   }
 
   /// iOS only. Use this function to retrieve the `PurchasesPaymentDiscount`
@@ -552,148 +431,13 @@ class Purchases {
   /// [product] The `Product` the user intends to purchase.
   ///
   /// [discount] The `Discount` to apply to the product.
-  static Future<PaymentDiscount> getPaymentDiscount(
-      Product product, Discount discount) async {
-    Map<dynamic, dynamic> result =
-        await _channel.invokeMethod('getPaymentDiscount', {
-      'productIdentifier': product.identifier,
-      'discountIdentifier': discount.identifier
-    });
-    return PaymentDiscount.fromJson(result);
+  static Future<PaymentDiscount> getPaymentDiscount(Product product, Discount discount) async {
+    return await PurchasesFlutterPlatform.instance.getPaymentDiscount(product, discount);
   }
 
   /// Android only. Call close when you are done with this instance of Purchases to disconnect
   /// from the billing services and clean up resources
   static Future<void> close() async {
-    await _channel.invokeMethod('close');
+    await PurchasesFlutterPlatform.instance.close();
   }
-}
-
-/// This class holds the information used when upgrading from another sku.
-/// To be used with purchaseProduct and purchasePackage.
-class UpgradeInfo {
-  /// The oldSKU to upgrade from.
-  String oldSKU;
-
-  /// The [ProrationMode] to use when upgrading the given oldSKU.
-  ProrationMode? prorationMode;
-
-  /// Constructs an UpgradeInfo
-  UpgradeInfo(this.oldSKU, {this.prorationMode});
-}
-
-/// Replace SKU's ProrationMode.
-enum ProrationMode {
-  /// The Upgrade or Downgrade policy is unknown.
-  unknownSubscriptionUpgradeDowngradePolicy,
-
-  /// Replacement takes effect immediately, and the remaining time will be
-  /// prorated and credited to the user. This is the current default behavior.
-  immediateWithTimeProration,
-
-  /// Replacement takes effect immediately, and the billing cycle remains the
-  /// same. The price for the remaining period will be charged. This option is
-  /// only available for subscription upgrade.
-  immediateAndChargeProratedPrice,
-
-  /// Replacement takes effect immediately, and the new price will be charged on
-  /// next recurrence time. The billing cycle stays the same.
-  immediateWithoutProration,
-
-  /// Replacement takes effect when the old plan expires, and the new price will
-  /// be charged at the same time.
-  deferred
-}
-
-/// Supported SKU types.
-enum PurchaseType {
-  /// A type of SKU for in-app products.
-  inapp,
-
-  /// A type of SKU for subscriptions.
-  subs
-}
-
-/// Billing Feature types
-enum BillingFeature {
-  /// [https://developer.android.com/reference/com/android/
-  /// billingclient/api/BillingClient.FeatureType#SUBSCRIPTIONS]
-  subscriptions,
-
-  /// [https://developer.android.com/reference/com/android/
-  /// billingclient/api/BillingClient.FeatureType#SUBSCRIPTIONS_UPDATE]
-  subscriptionsUpdate,
-
-  /// [https://developer.android.com/reference/com/android/
-  /// billingclient/api/BillingClient.FeatureType#IN_APP_ITEMS_ON_VR]
-  inAppItemsOnVr,
-
-  /// [https://developer.android.com/reference/com/android/
-  /// billingclient/api/BillingClient.FeatureType#SUBSCRIPTIONS_ON_VR]
-  subscriptionsOnVr,
-
-  /// [https://developer.android.com/reference/com/android/
-  /// billingclient/api/BillingClient.FeatureType#PRICE_CHANGE_CONFIRMATION]
-  priceChangeConfirmation
-}
-
-/// Supported Attribution networks.
-enum PurchasesAttributionNetwork {
-  /// [https://searchads.apple.com/]
-  appleSearchAds,
-
-  /// [https://www.adjust.com/]
-  adjust,
-
-  /// [https://www.appsflyer.com/]
-  appsflyer,
-
-  /// [http://branch.io/]
-  branch,
-
-  /// [http://tenjin.io/]
-  tenjin,
-
-  /// [https://developers.facebook.com/]
-  facebook
-}
-
-/// Possible IntroEligibility status.
-/// Use [checkTrialOrIntroductoryPriceEligibility] to determine the eligibility
-enum IntroEligibilityStatus {
-  /// RevenueCat doesn't have enough information to determine eligibility.
-  introEligibilityStatusUnknown,
-
-  /// The user is not eligible for a free trial or intro pricing for this product.
-  introEligibilityStatusIneligible,
-
-  /// The user is eligible for a free trial or intro pricing for this product.
-  introEligibilityStatusEligible
-}
-
-/// Holds the introductory price status
-class IntroEligibility {
-  /// The introductory price eligibility status
-  IntroEligibilityStatus status;
-
-  /// Description of the status
-  String description;
-
-  /// Constructs an Transaction from a JSON object
-  IntroEligibility.fromJson(Map<dynamic, dynamic> map)
-      : status = IntroEligibilityStatus.values[map["status"]],
-        description = map["description"];
-}
-
-/// Class used to hold the result of the logIn method
-class LogInResult {
-  /// true if the logged in user has been created in the
-  /// RevenueCat backend for the first time
-  final bool created;
-
-  /// the purchaserInfo associated to the logged in user
-  final PurchaserInfo purchaserInfo;
-
-  /// Constructs a LogInResult with its properties
-  LogInResult({required this.created, required this.purchaserInfo});
 }
